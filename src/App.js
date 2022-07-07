@@ -18,9 +18,9 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <p>Hi {this.state.name.firstname} {this.state.name.lastname}</p>
+          <p>Hola{this.state.name.firstname} {this.state.name.lastname}</p>
           <button onClick={() => {
-          this.setState((state, props) => {
+          this.setState(() => {
             return{
               name: {firstname: 'Andree', lastname: 'Reyes'}
             }
