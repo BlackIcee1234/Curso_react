@@ -8,31 +8,46 @@ class App extends Component {
     super();
 
     this.state = {
-      name: {firstname: 'Axel', lastname: 'Perez'}
+      monsters: [],
+    };
+  }
+
+  componentDidMount(){
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then((response) => response.json())
+    .then((users) => this.setState(() => {
+      return{ monsters: users};
+    },
+    () => {
+      console.log(this.state);
     }
+    ));
+
   }
 
   render()
   {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>Hola{this.state.name.firstname} {this.state.name.lastname}</p>
-          <button onClick={() => {
-          this.setState(() => {
-            return{
-              name: {firstname: 'Andree', lastname: 'Reyes'}
-            }
-          }, ()=>{
-            console.log(this.state);
+        <input 
+        className='search-box' 
+        type='search' 
+        placeholder='Search Monsters' 
+        onChange={(event) => {console.log(event.target.value);
+          const searchString = event.target.value.toLocaleLowerCase();
+          const filteredMonsters = this.state.monsters.filter((monster) => {
+            return monster.name.toLocaleLowerCase().includes(searchString);
           });
-         }}
-         >
-          Change Name
-         </button>
+          this.setState(()=>{
+            return {monsters: filteredMonsters}
+          })
+        }}/>
+        {
+          this.state.monsters.map((monster) => {
+            return <h1 key={monster.id}>{monster.name}</h1>
+          })
+        }
 
-        </header>
       </div>
     );
   }
