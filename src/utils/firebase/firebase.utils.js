@@ -3,9 +3,10 @@ import {
   getAuth,
   signInWithRedirect,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
 } from "firebase/auth";
-
 import {
   getFirestore,
   doc,
@@ -13,6 +14,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 
+//CONFIGURACION DE FIREBASE, ESTA SE OBTIENE DESDE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCiu_odFrofM0vRzfIwCoRyebaeQaqOVNU",
   authDomain: "crwn-clothing-axel-db.firebaseapp.com",
@@ -21,26 +23,36 @@ const firebaseConfig = {
   messagingSenderId: "1095663758276",
   appId: "1:1095663758276:web:939b0fc4681dcf4aa6d291",
 };
-
 initializeApp(firebaseConfig);
 
+//ES EL PROVEEDOR, EN ESTE CASO DE GOOGLE
 const googleProvider = new GoogleAuthProvider();
-
 googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 
+//OBTIENE LA AUTENTICACION
 export const auth = getAuth();
 
+//INICIA SESION SON GOOGLE POPUP
 export const signInWithGooglePopup = () => 
 signInWithPopup(auth, googleProvider);
 
+//INICIA SESION CON GOOGLE REDIRECT
 export const signInWithGoogleRedirect = () => 
 signInWithRedirect(auth, googleProvider);
 
+//OBTIENE LA BDD
 export const db = getFirestore();
 
-export const createUserDocumentFromAuth = async (userAuth) => {
+//CREACION DE UN REGISTRO EN FIRESTORE, 
+//CON 3 ARGUMENTOS(BDD,'NOMBRE DEL DOCUMENTO',ID DE AUTENTICACION)
+export const createUserDocumentFromAuth = async (
+  userAuth, 
+  additionalInformation = {}
+  ) => {
+  if(!userAuth) return;
+
   const userDocRef = doc(db, 'users', userAuth.uid);
   console.log(userDocRef);
 
@@ -57,6 +69,7 @@ export const createUserDocumentFromAuth = async (userAuth) => {
         displayName,
         email,
         createdAt,
+        ...additionalInformation
       });
     } catch (error) {
       console.log("Error creating the user", error.message);
@@ -64,3 +77,19 @@ export const createUserDocumentFromAuth = async (userAuth) => {
   }
   return userDocRef;
 };
+
+//REGISTRAR CON EMAIL Y PASSOWRD
+
+export const createAuthUserWithEmailAndPassword = async (email, password) =>{
+  if(!email || !password) return;
+
+  return await createUserWithEmailAndPassword(auth,email,password);
+}
+
+//INICIA SESION CON EMAIL Y PASSOWRD
+
+export const sigInAuthUserWithEmailAndPassword = async (email, password) =>{
+  if(!email || !password) return;
+
+  return await signInWithEmailAndPassword(auth,email,password);
+}
