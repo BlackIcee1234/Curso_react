@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   signInWithRedirect,
@@ -7,90 +7,84 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
-} from "firebase/auth";
+  onAuthStateChanged,
+} from 'firebase/auth';
 import {
   getFirestore,
   doc,
   getDoc,
   setDoc,
   collection,
-  writeBatch, 
-  query, 
-  getDocs
-} from "firebase/firestore";
+  writeBatch,
+  query,
+  getDocs,
+} from 'firebase/firestore';
 
-//CONFIGURACION DE FIREBASE, ESTA SE OBTIENE DESDE FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyCiu_odFrofM0vRzfIwCoRyebaeQaqOVNU",
-  authDomain: "crwn-clothing-axel-db.firebaseapp.com",
-  projectId: "crwn-clothing-axel-db",
-  storageBucket: "crwn-clothing-axel-db.appspot.com",
-  messagingSenderId: "1095663758276",
-  appId: "1:1095663758276:web:939b0fc4681dcf4aa6d291",
+  apiKey: 'AIzaSyDDU4V-_QV3M8GyhC9SVieRTDM4dbiT0Yk',
+  authDomain: 'crwn-clothing-db-98d4d.firebaseapp.com',
+  projectId: 'crwn-clothing-db-98d4d',
+  storageBucket: 'crwn-clothing-db-98d4d.appspot.com',
+  messagingSenderId: '626766232035',
+  appId: '1:626766232035:web:506621582dab103a4d08d6',
 };
-initializeApp(firebaseConfig);
 
-//ES EL PROVEEDOR, EN ESTE CASO DE GOOGLE
+const firebaseApp = initializeApp(firebaseConfig);
+
 const googleProvider = new GoogleAuthProvider();
+
 googleProvider.setCustomParameters({
-  prompt: "select_account",
+  prompt: 'select_account',
 });
 
-//OBTIENE LA AUTENTICACION
 export const auth = getAuth();
+export const signInWithGooglePopup = () =>
+  signInWithPopup(auth, googleProvider);
+export const signInWithGoogleRedirect = () =>
+  signInWithRedirect(auth, googleProvider);
 
-//INICIA SESION SON GOOGLE POPUP
-export const signInWithGooglePopup = () => 
-signInWithPopup(auth, googleProvider);
-
-//INICIA SESION CON GOOGLE REDIRECT
-export const signInWithGoogleRedirect = () => 
-signInWithRedirect(auth, googleProvider);
-
-//OBTIENE LA BDD
 export const db = getFirestore();
 
-export const addCollectionsAndDocuments = (collectionKey, objectsToAdd) => {
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd,
+  field
+) => {
   const collectionRef = collection(db, collectionKey);
   const batch = writeBatch(db);
 
-  objectsToAdd.forEach((object) =>{
+  objectsToAdd.forEach((object) => {
     const docRef = doc(collectionRef, object.title.toLowerCase());
     batch.set(docRef, object);
-  })
+  });
 
-  batch.commit();
+  await batch.commit();
   console.log('done');
-}
+};
 
 export const getCategoriesAndDocuments = async () => {
-  const collectionRef = collection(db,'categories');
+  const collectionRef = collection(db, 'categories');
   const q = query(collectionRef);
 
-  const querySnapShot = await getDocs(q);
-  const categoryMap = querySnapShot.docs.reduce((acc, docSnapShot)=>{
-    const {title, items} = docSnapShot.data();
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
     acc[title.toLowerCase()] = items;
     return acc;
   }, {});
-  return categoryMap;
-}
 
-//CREACION DE UN REGISTRO EN FIRESTORE, 
-//CON 3 ARGUMENTOS(BDD,'NOMBRE DEL DOCUMENTO',ID DE AUTENTICACION)
+  return categoryMap;
+};
+
 export const createUserDocumentFromAuth = async (
-  userAuth, 
+  userAuth,
   additionalInformation = {}
-  ) => {
-  if(!userAuth) return;
+) => {
+  if (!userAuth) return;
 
   const userDocRef = doc(db, 'users', userAuth.uid);
-  console.log(userDocRef);
 
   const userSnapshot = await getDoc(userDocRef);
-  console.log(userSnapshot);
-  console.log(userSnapshot.exists());
 
   if (!userSnapshot.exists()) {
     const { displayName, email } = userAuth;
@@ -101,33 +95,29 @@ export const createUserDocumentFromAuth = async (
         displayName,
         email,
         createdAt,
-        ...additionalInformation
+        ...additionalInformation,
       });
     } catch (error) {
-      console.log("Error creating the user", error.message);
+      console.log('error creating the user', error.message);
     }
   }
+
   return userDocRef;
 };
 
-//REGISTRAR CON EMAIL Y PASSOWRD
+export const createAuthUserWithEmailAndPassword = async (email, password) => {
+  if (!email || !password) return;
 
-export const createAuthUserWithEmailAndPassword = async (email, password) =>{
-  if(!email || !password) return;
+  return await createUserWithEmailAndPassword(auth, email, password);
+};
 
-  return await createUserWithEmailAndPassword(auth,email,password);
-}
+export const signInAuthUserWithEmailAndPassword = async (email, password) => {
+  if (!email || !password) return;
 
-//INICIA SESION CON EMAIL Y PASSOWRD
+  return await signInWithEmailAndPassword(auth, email, password);
+};
 
-export const sigInAuthUserWithEmailAndPassword = async (email, password) =>{
-  if(!email || !password) return;
+export const signOutUser = async () => await signOut(auth);
 
-  return await signInWithEmailAndPassword(auth,email,password);
-}
-
-//CERRAR SESION 
-export const signOutUser = async () =>  await signOut(auth);
-//Oyente Observable
-export const onAuthStateChangedListener = (callback) => 
-onAuthStateChanged(auth, callback);
+export const onAuthStateChangedListener = (callback) =>
+  onAuthStateChanged(auth, callback);
