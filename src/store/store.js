@@ -3,29 +3,27 @@ import logger from 'redux-logger';
 import { rootReducer } from './root-reducer';
 import {persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-
-const loggerMiddleware = (store) => (next) => (action) => {
-    if(!action.type){
-        return next(action);
-    }
-
-    next(action);
-}
-
+// import thunk from 'redux-thunk';
+import createSagaMiddleware from 'redux-saga';
+import { rootSaga } from './root-saga';
 const persistConfig = {
     key: 'root',
     storage, 
-    blacklist: ['user']
+    whitelist: ['cart']
 }
+
+const sagaMiddleware = createSagaMiddleware();
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const middleWares = [process.env.NODE_ENV !== 'production' && logger].filter(Boolean);
+const middleWares = [process.env.NODE_ENV !== 'production' && logger, sagaMiddleware].filter(Boolean);
 
 const composedEnhancers = compose(applyMiddleware(...middleWares));
 
 //Esta funcion de redux toma 3 argumentos
 //createStore('Nuestro Root Reducer', 'Estados Predeterminados Adicionales', 'Potenciadores')
 export const store = createStore(persistedReducer, undefined, composedEnhancers);
+
+sagaMiddleware.run(rootSaga);
 
 export const persistor = persistStore(store);
