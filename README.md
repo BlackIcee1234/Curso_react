@@ -1,2 +1,1 @@
-Termino de la seccion 12.
-By Axel Perez
+El dia de hoy 02/08/2022 el commit, no refleja cambios, ya que realice la seccion de typescript basics de monster rolodex y en este repositorio esta la app de crwn-clothing-app.
