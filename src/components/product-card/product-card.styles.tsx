@@ -13,6 +13,10 @@ export const ProductCartContainer = styled.div`
     height: 95%;
     object-fit: cover;
     margin-bottom: 5px;
+
+    @media screen and (max-width: 800px) {
+    height: 80%;
+    }
   }
 
   button {
@@ -21,6 +25,11 @@ export const ProductCartContainer = styled.div`
     position: absolute;
     top: 255px;
     display: none;
+
+    @media screen and (max-width: 800px) {
+    top: 200px;
+    width: 5px;
+  }
   }
 
   &:hover {
